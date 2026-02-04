@@ -1,0 +1,126 @@
+# CL-Splats Configuration
+# Continual Learning of Gaussian Splatting with Local Optimization
+
+# ============================================================================
+# Training Configuration
+# ============================================================================
+train:
+  start_time: 0           # Starting timestep
+  num_times: 10           # Total number of timesteps
+  iterations: 30000       # Training iterations for timestep 0 (full scene)
+  incremental_iterations: 16000  # Training iterations for timestep > 0 (incremental updates)
+  
+  # Logging
+  log_interval: 100       # Log every N iterations
+  vis_interval: 1000      # Save visualization every N iterations (0 to disable, only for incremental t>0)
+  
+  # Visualization settings (only for incremental training t>0)
+  vis_special_view_idx: -1  # Special view index from current timestep cameras (-1 to disable)
+  vis_t0_image_path: null   # T0 image path for forgetting check (e.g., "C:/path/to/t0/images/0001.png")
+  vis_generate_gif: true    # Generate GIF at end of each timestep
+  
+  # Learning rates
+  lr_position: 0.00016
+  lr_position_final: 0.0000016
+  lr_delay_mult: 0.01
+  lr_feature: 0.0025
+  lr_opacity: 0.05
+  lr_scaling: 0.005
+  lr_rotation: 0.001
+  
+  # Densification
+  percent_dense: 0.01
+  densification_interval: 100
+  densify_from_iter: 500
+  densify_until_iter: 15000
+  densify_grad_threshold: 0.0002
+  opacity_reset_interval: 3000
+  
+  # Local Optimization (CL-Splats)
+  mask_recompute_interval: 500  # Recompute active mask after densification
+  sphere_prune_interval: 15     # Check sphere bounds every N iterations (per paper)
+  
+  # Loss weights
+  lambda_dssim: 0.2       # Weight for SSIM loss
+
+# ============================================================================
+# Model Configuration
+# ============================================================================
+model:
+  sh_degree: 3            # Spherical harmonics degree
+  optimizer_type: sparse_adam  # Use sparse_adam for Local Optimization (or "default" for standard Adam)
+
+# ============================================================================
+# Dataset Configuration
+# ============================================================================
+dataset:
+  type: colmap            # Dataset type: colmap, blender
+  path: null              # Path to dataset (REQUIRED - set via command line)
+  resolution: 1.0         # Image resolution scale (1.0 = original)
+  white_background: false
+  eval: false             # Whether to use train/test split
+
+# ============================================================================
+# Change Detection Configuration
+# ============================================================================
+change_detection:
+  threshold: 0.2
+  dilate_mask: true
+  dilate_kernel_size: 13
+  upsample: true
+
+# ============================================================================
+# Lifter Configuration (2D→3D)
+# ============================================================================
+lifter:
+  vote_threshold: 5       # Minimum views for majority voting (原值2，提高以减少误标记)
+
+# ============================================================================
+# Sampling Configuration
+# ============================================================================
+sampling:
+  num_clusters: 10                    # K-Means clusters for GMM
+  samples_per_round: 100              # Samples per iteration
+  max_rounds: 10                      # Maximum sampling rounds
+  min_points_for_region_sampling: 50  # Threshold for region vs full-scene
+  majority_vote_threshold: 2          # Minimum views for valid sample
+  num_new_points: 1000                # Target new points per timestep
+
+# ============================================================================
+# Pruning Configuration
+# ============================================================================
+pruning:
+  min_cluster_size: 1000  # Minimum points for HDBSCAN cluster
+  quantile: 0.98          # Percentile for radius calculation
+  radius_multiplier: 1.1  # Safety factor for sphere radius
+
+# ============================================================================
+# Output & Logging
+# ============================================================================
+output_dir: outputs
+log_level: INFO
+log_to_file: true
+save_interval: 1          # Save checkpoint every N timesteps
+
+# ============================================================================
+# Weights & Biases
+# ============================================================================
+wandb_project: cl-splats
+wandb_run_name: null      # Auto-generated if null
+wandb_mode: disabled      # online, offline, disabled
+
+# ============================================================================
+# History Logging
+# ============================================================================
+history:
+  log_history: true
+
+# ============================================================================
+# Checkpointing
+# ============================================================================
+resume_from: null         # Path to checkpoint to resume from
+
+# ============================================================================
+# Background
+# ============================================================================
+white_background: false
